@@ -23,7 +23,7 @@ Each trial subfolder contains a consistent set of scripts following the full exp
 |--------|-------------|
 | Merging of Datasets | Combines and pre-processes raw datasets into analysis-ready form |
 | Exploratory Data Analysis | Distributions, trends, correlations and outlier detection |
-| KPI of the Results | Computes key performance indicators (RMSE, MAE, MAPE, etc.) across models |
+| KPI of the Results | Computes key performance indicators (MAE, MedAE) across models |
 | Visualisation of the Results | Generates plots and comparative charts of forecasting outcomes |
 
 # Models Evaluated
