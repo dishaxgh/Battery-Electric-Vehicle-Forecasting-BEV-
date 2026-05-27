@@ -47,7 +47,7 @@ The folder structure mirrors "Codes/" with the exact same pipeline stages (mergi
 2. Data_2025/ - All datasets used by the scripts in Codes_2025/ for the case study.
 
 ## Note
-The thesis document is also uploaded here for your reference. 
+The master thesis document is also uploaded here for your reference. 
 
 
 
