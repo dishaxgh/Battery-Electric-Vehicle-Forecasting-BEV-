@@ -22,7 +22,7 @@ Each trial subfolder contains a consistent set of scripts following the full exp
 | Script | Description |
 |--------|-------------|
 | Merging of Datasets | Combines and pre-processes raw datasets into analysis-ready form |
-| Exploratory Data Analysis | Distributions, trends, correlations and outlier detection |
+| Exploratory Data Analysis | Distributions, trends, correlations and missing values imputation |
 | KPI of the Results | Computes key performance indicators (MAE, MedAE) across models |
 | Visualisation of the Results | Generates plots and comparative charts of forecasting outcomes |
 
@@ -47,7 +47,7 @@ The folder structure mirrors "Codes/" with the exact same pipeline stages (mergi
 2. Data_2025/ - All datasets used by the scripts in Codes_2025/ for the case study.
 
 ## Note
-The master thesis document is also uploaded here for your reference. 
+The master thesis document and presentation is also uploaded here for your reference. 
 
 
 
