@@ -34,9 +34,9 @@ Each trial subfolder contains a consistent set of scripts following the full exp
 4. LSTM
 5. Random Forest
 6. XGBoost
-7. Proposed ensemble model with ElasticNet Regression
-8. Proposed ensemble model with Gradient Boosting
-9. Proposed ensemble model with Weighted Averaging
+7. Proposed ensemble model with ElasticNet Regression as meta learner 
+8. Proposed ensemble model with Gradient Boosting as meta learner
+9. Proposed ensemble model with Weighted Averaging as meta learner
 
 #  Codes_2025 for Case Study To Forecast for 2025
 Contains the source code for the 2025 real-world BEV market case study. 
