@@ -20,25 +20,25 @@ app = FastAPI(
     version="1.0",
 )
 
-# Global variables
-follower_model = None
-leader_model = None
+# Global lazy-load variables
+_follower_model = None
+_leader_model = None
 
-print("Starting model loading phase...")
 
-try:
-  print("Attempting to load follower model...")
-  follower_model = joblib.load("models/follower_hybrid_weighted_model.pkl")
-  print("Follower model loaded successfully!")
-except Exception as e:
-  print(f"FAILED to load follower model: {e}")
+def get_follower_model():
+  global _follower_model
+  if _follower_model is None:
+    print("Lazy-loading follower model...")
+    _follower_model = joblib.load("models/follower_hybrid_weighted_model.pkl")
+  return _follower_model
 
-try:
-  print("Attempting to load leader model...")
-  leader_model = joblib.load("models/leader_arimax_models.pkl")
-  print("Leader model loaded successfully!")
-except Exception as e:
-  print(f"FAILED to load leader model: {e}")
+
+def get_leader_model():
+  global _leader_model
+  if _leader_model is None:
+    print("Lazy-loading leader model...")
+    _leader_model = joblib.load("models/leader_arimax_models.pkl")
+  return _leader_model
 
 
 class ForecastRequest(BaseModel):
@@ -49,7 +49,7 @@ class ForecastRequest(BaseModel):
 
 @app.get("/")
 def read_root():
-  return {"message": "BEV Demand Forecasting API with Real Thesis Models is live!"}
+  return {"message": "BEV Demand Forecasting API with Lazy-Loaded Models is live!"}
 
 
 @app.post("/predict")
@@ -61,20 +61,23 @@ def predict_demand(data: ForecastRequest):
 
   regime_lower = data.regime.lower()
 
-  if regime_lower == "leader":
-    if leader_model is None:
-      raise HTTPException(status_code=500, detail="Leader model not loaded.")
-    prediction = leader_model.predict(input_data)
+  try:
+    if regime_lower == "leader":
+      model = get_leader_model()
+      prediction = model.predict(input_data)
 
-  elif regime_lower == "follower":
-    if follower_model is None:
-      raise HTTPException(status_code=500, detail="Follower model not loaded.")
-    prediction = follower_model.predict(input_data)
+    elif regime_lower == "follower":
+      model = get_follower_model()
+      prediction = model.predict(input_data)
 
-  else:
+    else:
+      raise HTTPException(
+          status_code=400,
+          detail="Invalid regime. Choose 'leader' or 'follower'.",
+      )
+  except Exception as e:
     raise HTTPException(
-        status_code=400,
-        detail="Invalid regime. Choose 'leader' or 'follower'.",
+        status_code=500, detail=f"Model prediction failed: {str(e)}"
     )
 
   return {
