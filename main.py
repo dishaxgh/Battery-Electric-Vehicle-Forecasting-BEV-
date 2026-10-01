@@ -1,14 +1,13 @@
 import sys
 import numpy as np
 
-# --- Compatibility patch for NumPy version mismatch during unpickling ---
+# --- Compatibility patch for NumPy version mismatch ---
 try:
   import numpy._core
 except ImportError:
   import numpy.core
 
   sys.modules["numpy._core"] = numpy.core
-# -----------------------------------------------------------------------
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -21,13 +20,25 @@ app = FastAPI(
     version="1.0",
 )
 
-# Load your actual thesis models from the models folder when the server starts
+# Global variables
+follower_model = None
+leader_model = None
+
+print("Starting model loading phase...")
+
 try:
+  print("Attempting to load follower model...")
   follower_model = joblib.load("models/follower_hybrid_weighted_model.pkl")
-  leader_model = joblib.load("models/leader_arimax_models.pkl")
-  print("Leader and Follower models loaded successfully!")
+  print("Follower model loaded successfully!")
 except Exception as e:
-  print(f"Error loading models: {e}")
+  print(f"FAILED to load follower model: {e}")
+
+try:
+  print("Attempting to load leader model...")
+  leader_model = joblib.load("models/leader_arimax_models.pkl")
+  print("Leader model loaded successfully!")
+except Exception as e:
+  print(f"FAILED to load leader model: {e}")
 
 
 class ForecastRequest(BaseModel):
@@ -51,12 +62,12 @@ def predict_demand(data: ForecastRequest):
   regime_lower = data.regime.lower()
 
   if regime_lower == "leader":
-    if "leader_model" not in globals():
+    if leader_model is None:
       raise HTTPException(status_code=500, detail="Leader model not loaded.")
     prediction = leader_model.predict(input_data)
 
   elif regime_lower == "follower":
-    if "follower_model" not in globals():
+    if follower_model is None:
       raise HTTPException(status_code=500, detail="Follower model not loaded.")
     prediction = follower_model.predict(input_data)
 
