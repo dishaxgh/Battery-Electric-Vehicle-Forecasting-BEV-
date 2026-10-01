@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
 import pandas as pd
+import numpy as np
 
 app = FastAPI(
     title="BEV Demand Forecasting API",
@@ -9,7 +10,14 @@ app = FastAPI(
     version="1.0"
 )
 
-# Define what input data your API expects from users/recruiters
+# Load your actual thesis models from the models folder when the server starts
+try:
+    follower_model = joblib.load("models/follower_hybrid_weighted_model.pkl")
+    leader_model = joblib.load("models/leader_arimax_models.pkl")
+    print("Leader and Follower models loaded successfully!")
+except Exception as e:
+    print(f"Error loading models: {e}")
+
 class ForecastRequest(BaseModel):
     regime: str  # "leader" or "follower"
     socioeconomic_indicator: float
@@ -17,22 +25,32 @@ class ForecastRequest(BaseModel):
 
 @app.get("/")
 def read_root():
-    return {"message": "BEV Demand Forecasting API is live and running!"}
+    return {"message": "BEV Demand Forecasting API with Real Thesis Models is live!"}
 
 @app.post("/predict")
 def predict_demand(data: ForecastRequest):
-    # Here is where you would load your model.pkl and make a prediction.
-    # For now, this proves the endpoint works live in production!
-    
-    if data.regime.lower() == "leader":
-        # Placeholder calculation for Leader regime
-        forecast_value = data.socioeconomic_indicator * 1.5 + data.infrastructure_indicator * 2.0
+    input_data = pd.DataFrame([{
+        "socioeconomic_indicator": data.socioeconomic_indicator,
+        "infrastructure_indicator": data.infrastructure_indicator
+    }])
+
+    regime_lower = data.regime.lower()
+
+    if regime_lower == "leader":
+        if 'leader_model' not in globals():
+            raise HTTPException(status_code=500, detail="Leader model not loaded.")
+        prediction = leader_model.predict(input_data)
+        
+    elif regime_lower == "follower":
+        if 'follower_model' not in globals():
+            raise HTTPException(status_code=500, detail="Follower model not loaded.")
+        prediction = follower_model.predict(input_data)
+        
     else:
-        # Placeholder calculation for Follower regime
-        forecast_value = data.socioeconomic_indicator * 1.1 + data.infrastructure_indicator * 1.3
+        raise HTTPException(status_code=400, detail="Invalid regime. Choose 'leader' or 'follower'.")
 
     return {
         "regime": data.regime,
-        "predicted_demand": forecast_value,
+        "predicted_demand": float(prediction[0]),
         "status": "success"
     }
